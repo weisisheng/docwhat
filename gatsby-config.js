@@ -60,6 +60,18 @@ module.exports = {
             },
           },
           {
+            resolve: 'gatsby-remark-draw',
+            options: {
+              strategy: 'img',
+              bob: {
+                fontFamily: 'verdana',
+              },
+              mermaid: {
+                theme: 'forest',
+              },
+            },
+          },
+          {
             resolve: `gatsby-remark-responsive-iframe`,
             options: {
               wrapperStyle: `margin-bottom: 1.0725rem`,
