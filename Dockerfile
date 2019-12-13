@@ -12,9 +12,9 @@ FROM nginx:stable-alpine AS nginx
 FROM node AS files
 WORKDIR /x
 RUN --mount=id=docwhat-var-cache-apt,target=/var/cache/apt,type=cache,sharing=locked --mount=id=docwhat-var-lib/apt,target=/var/lib/apt,type=cache,sharing=locked \
-  apt-get update -y &&
-  apt-get install --no-install-recommends -y rsync &&
-  apt-get clean &&
+  apt-get update -y && \
+  apt-get install --no-install-recommends -y rsync && \
+  apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 RUN --mount=type=bind,target=/s \
   rsync --archive --inplace --exclude=nginx.conf \
@@ -60,12 +60,12 @@ RUN yarn run build </dev/null 2>&1 | cat
 
 ###################
 FROM node AS compress
-RUN rm -f /etc/apt/apt.conf.d/docker-clean &&
+RUN rm -f /etc/apt/apt.conf.d/docker-clean && \
   echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
 RUN --mount=id=docwhat-var-cache-apt,target=/var/cache/apt,type=cache,sharing=locked --mount=id=docwhat-var-lib/apt,target=/var/lib/apt,type=cache,sharing=locked \
-  apt-get update &&
-  apt-get install --no-install-recommends -y pigz &&
-  apt-get clean &&
+  apt-get update && \
+  apt-get install --no-install-recommends -y pigz && \
+  apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 RUN mkdir /workdir
 WORKDIR /workdir
