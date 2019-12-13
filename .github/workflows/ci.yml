@@ -2,7 +2,7 @@ name: ci
 
 on:
   schedule:
-    - "53 9 * * 3"
+    - cron: "53 9 * * 3"
   pull_request:
   push:
 
