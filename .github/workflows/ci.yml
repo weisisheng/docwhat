@@ -40,5 +40,4 @@ jobs:
             "--label=org.opencontainers.image.url=https://github.com/${{ github.repository }}" \
             "--label=org.opencontainers.image.source=https://github.com/${{ github.repository }}.git#${{ github.ref }}" \
             "--label=org.opencontainers.image.revision=${{ github.sha }}" \
-
-             "./"
+            "./"
