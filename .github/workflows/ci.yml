@@ -23,9 +23,7 @@ jobs:
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: Environment variables
-        run: |
-          echo "::set-env name=build_rfc3339::$(date --rfc-3339=seconds)"
-          head -n 10 Dockerfile | perl -n -e 'print "::set-env name=build_", lc($1), "::$2\n" if m/^#\s+(Authors|title|Description):\s*(.*)\s*$/i;'
+        run: script/ci-env
 
       - name: Run Buildx
         run: |
