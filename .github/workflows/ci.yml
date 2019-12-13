@@ -4,10 +4,7 @@ on:
   schedule:
     - "53 9 * * 3"
   pull_request:
-    branches:
   push:
-    branches:
-    tags:
 
 jobs:
   ci:
