@@ -1,21 +1,24 @@
 # syntax = docker/dockerfile:1-experimental
+# Authors: Christian Höltje <https://docwhat.org>
+# Title: docwhat.org
+# Description: My personal website at https://docwhat.org/
 
 ARG NODE_VERSION=10
 
-FROM node:$NODE_VERSION     AS node
-FROM nginx:stable-alpine    AS nginx
+FROM node:$NODE_VERSION AS node
+FROM nginx:stable-alpine AS nginx
 
 #############################
 FROM node AS files
 WORKDIR /x
 RUN --mount=id=docwhat-var-cache-apt,target=/var/cache/apt,type=cache,sharing=locked --mount=id=docwhat-var-lib/apt,target=/var/lib/apt,type=cache,sharing=locked \
-  apt-get update -y && \
-  apt-get install --no-install-recommends -y rsync && \
-  apt-get clean && \
+  apt-get update -y &&
+  apt-get install --no-install-recommends -y rsync &&
+  apt-get clean &&
   rm -rf /var/lib/apt/lists/*
 RUN --mount=type=bind,target=/s \
-      rsync --archive --inplace --exclude=nginx.conf \
-      /s/ /x/
+  rsync --archive --inplace --exclude=nginx.conf \
+  /s/ /x/
 
 #############################
 FROM node AS buildenv
@@ -57,13 +60,14 @@ RUN yarn run build </dev/null 2>&1 | cat
 
 ###################
 FROM node AS compress
-RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+RUN rm -f /etc/apt/apt.conf.d/docker-clean &&
+  echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache
 RUN --mount=id=docwhat-var-cache-apt,target=/var/cache/apt,type=cache,sharing=locked --mount=id=docwhat-var-lib/apt,target=/var/lib/apt,type=cache,sharing=locked \
-  apt-get update && \
-  apt-get install --no-install-recommends -y pigz && \
-  apt-get clean && \
+  apt-get update &&
+  apt-get install --no-install-recommends -y pigz &&
+  apt-get clean &&
   rm -rf /var/lib/apt/lists/*
-  RUN mkdir /workdir
+RUN mkdir /workdir
 WORKDIR /workdir
 
 COPY package.json ./
@@ -75,22 +79,7 @@ RUN yarn run compress
 #################################
 FROM nginx AS final
 
-ARG GIT_BRANCH
-ARG GIT_URL
-ARG GIT_VERSION
-ARG SITE_VERSION
-
-LABEL Maintainer="Christian Höltje <https://docwhat.org>"
-LABEL Name="${SITE_VERSION}"
-LABEL Version="Website for docwhat.org"
-LABEL org.opencontainers.image.authors="Christian Höltje <https://docwhat.org>"
-LABEL org.opencontainers.image.title="Website for docwhat.org"
-LABEL org.opencontainers.image.url="https://docwhat.org/"
-LABEL org.opencontainers.image.source="${GIT_URL}#${GIT_BRANCH}"
-LABEL org.opencontainers.image.version="${GIT_VERSION}"
-LABEL org.opencontainers.image.revision="${SITE_VERSION}"
-
-HEALTHCHECK --interval=5s --timeout=5s CMD wget http://localhost/nginx-health -q -O - > /dev/null 2>&1
+HEALTHCHECK --interval=5s --timeout=5s CMD wget http://localhost/nginx-health -q -O - >/dev/null 2>&1
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=lint /workdir/package.json /etc/docwhat.json

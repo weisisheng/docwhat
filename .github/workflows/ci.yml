@@ -1,6 +1,8 @@
 name: ci
 
 on:
+  schedule:
+    - "53 9 * * 3"
   pull_request:
     branches:
   push:
@@ -23,9 +25,23 @@ jobs:
       - name: Available platforms
         run: echo ${{ steps.buildx.outputs.platforms }}
 
+      - name: Environment variables
+        run: |
+          echo "::set-env name=build_rfc3339::$(date --rfc-3339=seconds)"
+          head -n 10 Dockerfile | perl -n -e 'print "::set-env name::build_", lc($1), "=$2\n" if m/^#\s+(Authors|title|Description):\s*(.*)\s*$/i;'
+
       - name: Run Buildx
         run: |
           docker buildx build \
             "--platform=linux/amd64" \
             "--output=type=image,push=false" \
-            "--file=Dockerfile" "./"
+            "--file=Dockerfile" \
+            "--label=org.opencontainers.image.title=${{ env.build_title }}" \
+            "--label=org.opencontainers.image.description=${{ env.build_description }}" \
+            "--label=org.opencontainers.image.authors=${{ env.build_authors }}" \
+            "--label=org.opencontainers.image.created=${{ env.build_rcf3339 }}" \
+            "--label=org.opencontainers.image.url=https://github.com/${{ github.repository }}" \
+            "--label=org.opencontainers.image.source=https://github.com/${{ github.repository }}.git#${{ github.ref }}" \
+            "--label=org.opencontainers.image.revision=${{ github.sha }}" \
+
+             "./"
